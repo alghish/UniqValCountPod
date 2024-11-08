@@ -4,6 +4,7 @@ from pywebio.output import put_html, put_text, put_markdown, put_table, use_scop
 from pywebio import start_server
 from pywebio.input import file_upload
 import io
+import argparse
 
 # Function to display plots in PyWebIO
 def display_plots():
@@ -136,4 +137,9 @@ def display_plots():
 
 # Start PyWebIO server
 if __name__ == '__main__':
-    start_server(display_plots, port=8080)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--port", type=int, default=8080)
+    args = parser.parse_args()
+
+    start_server(display_plots, debug=False, port=args.port, cdn=False)
+    # start_server(display_plots, port=8080)

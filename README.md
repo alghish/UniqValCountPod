@@ -2,6 +2,10 @@
 
 This project is a web application for visual data analysis of CSV files. It uses PyWebIO for the user interface and Plotly for generating visualizations. Users can upload CSV files, view data summaries, and analyze unique values, missing values, and categorical distributions with interactive charts.
 
+
+![alt text](assests/di.webp "Title-1")
+
+
 ## Features
 
 - **File Upload**: Upload any CSV file for analysis.
