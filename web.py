@@ -1,6 +1,6 @@
 import pandas as pd
 import plotly.express as px
-from pywebio.output import put_html, put_text, put_markdown, put_table, use_scope, popup, put_buttons
+from pywebio.output import put_html, put_text, put_markdown, put_table, use_scope, popup, put_buttons, put_row, put_processbar, set_processbar
 from pywebio import start_server
 from pywebio.input import file_upload
 import io
@@ -15,15 +15,20 @@ def display_plots():
     file_stream = io.BytesIO(file_content)
     df = pd.read_csv(file_stream)
 
+    # Display the progress bar
+    num_columns = len(df.columns)
+    put_processbar('progress')
+    
     # Analyze unique values and counts for each column
     column_analysis = {}
-    for column in df.columns:
+    for i, column in enumerate(df.columns, start=1):
         unique_values = df[column].nunique()  # Number of unique values
         counts = df[column].value_counts()    # Frequency of each unique value
         column_analysis[column] = {
             'unique_values': unique_values,
             'counts': counts
         }
+        set_processbar('progress', i / num_columns)  # Update progress bar
 
     # Prepare data for unique counts bar chart
     unique_counts = {col: analysis['unique_values'] for col, analysis in column_analysis.items()}
@@ -103,6 +108,31 @@ def display_plots():
     put_buttons(["Show Columns Analyzed"], onclick=lambda _: show_multiple_unique_counts_df())
     # put_text(f"Columns analyzed: {', '.join(multiple_unique_counts_df['Column'].tolist())}")  # Columns with >1 unique value
     put_html(fig3.to_html(include_plotlyjs="require", full_html=False))
+
+    # Find columns with unique values between 2 and 5 and create donut charts
+    put_markdown("## Donut Charts for Columns with 2 to 5 Unique Values")
+    donut_charts = []
+    count = 0
+
+    for column, analysis in column_analysis.items():
+        unique_count = analysis['unique_values']
+        
+        if 2 <= unique_count <= 5:
+            # Create a donut chart for the column
+            fig_donut = px.pie(df, names=column, hole=0.4, title=f"Donut Chart for '{column}'")
+            fig_donut.update_traces(textinfo='percent+label')
+            donut_charts.append(put_html(fig_donut.to_html(include_plotlyjs="require", full_html=False)))
+            count += 1
+
+            # Display the charts in rows of 3
+            if count % 2 == 0:
+                put_row(donut_charts)
+                donut_charts = []
+
+    # Display any remaining charts in the last row
+    if donut_charts:
+        put_row(donut_charts)
+
 
 # Start PyWebIO server
 if __name__ == '__main__':
